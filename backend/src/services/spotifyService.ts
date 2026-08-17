@@ -57,8 +57,7 @@ export const fetchTracks = async (country: string, genre: string, mood: string):
       params: {
         q: q,
         type: 'track',
-        market: country.toUpperCase(),
-        limit: 20
+        market: country.toUpperCase()
       }
     });
 
