@@ -22,25 +22,38 @@ export const SongList: React.FC<SongListProps> = ({ country, mood, genre }) => {
 
     setLoading(true);
     
-    // Simulate 1.5s loading state
-    const timer = setTimeout(() => {
-      let filtered = mockSongs;
-      
-      if (country) {
-        filtered = filtered.filter(s => s.countryName === country);
-      }
-      if (mood) {
-        filtered = filtered.filter(s => s.mood === mood);
-      }
-      if (genre) {
-        filtered = filtered.filter(s => s.genre === genre);
-      }
-      
-      setSongs(filtered);
-      setLoading(false);
-    }, 1500);
+    // Build the query string
+    const params = new URLSearchParams();
+    if (country) params.append('country', country);
+    if (mood) params.append('mood', mood);
+    if (genre) params.append('genre', genre);
 
-    return () => clearTimeout(timer);
+    // Use environment variable for backend URL, fallback to localhost
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
+    fetch(`${backendUrl}/api/tracks?${params.toString()}`)
+      .then(res => res.json())
+      .then(data => {
+        // Backend returns normalized tracks
+        if (data.error) {
+          console.error(data.error);
+          setSongs([]);
+        } else {
+          // Add a default coverColor for UI consistency
+          const tracks = (data.data || data).map((t: any, idx: number) => ({
+            ...t,
+            coverColor: ['bg-brand-500', 'bg-fuchsia-500', 'bg-cyan-500', 'bg-emerald-500', 'bg-amber-500'][idx % 5]
+          }));
+          setSongs(tracks);
+        }
+      })
+      .catch(err => {
+        console.error('Failed to fetch songs:', err);
+        setSongs([]);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [country, mood, genre]);
 
   if (!country && !mood && !genre) {
@@ -104,8 +117,12 @@ export const SongList: React.FC<SongListProps> = ({ country, mood, genre }) => {
                   transition={{ delay: i * 0.1 }}
                   className="group flex items-center gap-4 p-3 rounded-xl bg-slate-800/20 hover:bg-slate-800/50 border border-transparent hover:border-slate-700 transition-all duration-300 cursor-pointer"
                 >
-                  <div className={`w-12 h-12 rounded-lg ${song.coverColor} flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform`}>
-                    <Disc3 className="w-6 h-6 text-white/70" />
+                  <div className={`w-12 h-12 rounded-lg ${song.coverColor} flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden`}>
+                    {song.albumArt ? (
+                      <img src={song.albumArt} alt={song.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <Disc3 className="w-6 h-6 text-white/70" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="text-slate-200 font-medium truncate">{song.title}</h4>
