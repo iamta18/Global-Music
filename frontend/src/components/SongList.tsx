@@ -21,29 +21,10 @@ export const SongList: React.FC<SongListProps> = ({ country, mood, genre }) => {
     }
 
     setLoading(true);
-    
-    const countryToISO: Record<string, string> = {
-      'United States of America': 'US',
-      'United States': 'US',
-      'France': 'FR',
-      'United Kingdom': 'GB',
-      'Japan': 'JP',
-      'Brazil': 'BR',
-      'South Korea': 'KR',
-      'Germany': 'DE',
-      'Mexico': 'MX',
-      'Canada': 'CA',
-      'Australia': 'AU',
-      'India': 'IN',
-      'Spain': 'ES',
-      'Italy': 'IT',
-      'China': 'CN',
-      'Russia': 'RU'
-    };
 
     // Build the query string
     const params = new URLSearchParams();
-    if (country) params.append('country', countryToISO[country] || country);
+    if (country) params.append('country', country);
     if (mood) params.append('mood', mood);
     if (genre) params.append('genre', genre);
 

@@ -41,13 +41,32 @@ const getSpotifyToken = async (): Promise<string> => {
   }
 };
 
+const countryToISO: Record<string, string> = {
+  'united states of america': 'US',
+  'united states': 'US',
+  'france': 'FR',
+  'united kingdom': 'GB',
+  'japan': 'JP',
+  'brazil': 'BR',
+  'south korea': 'KR',
+  'germany': 'DE',
+  'mexico': 'MX',
+  'canada': 'CA',
+  'australia': 'AU',
+  'india': 'IN',
+  'spain': 'ES',
+  'italy': 'IT',
+  'china': 'CN',
+  'russia': 'RU'
+};
+
 export const fetchTracks = async (country: string, genre: string, mood: string): Promise<Track[]> => {
   const token = await getSpotifyToken();
   const moodKeywords = mapMoodToSpotifyKeywords(mood);
   
-  // Construct a search query for Spotify: genre filter and mood keywords
-  // e.g. genre:"pop" chill relaxing
-  const q = `genre:"${genre}" ${moodKeywords}`;
+  // Construct a highly localized search query: e.g. genre:"pop" chill India
+  const q = `genre:"${genre}" ${moodKeywords} ${country}`;
+  const marketCode = countryToISO[country.toLowerCase()] || 'US';
 
   try {
     const response = await axios.get('https://api.spotify.com/v1/search', {
@@ -57,7 +76,7 @@ export const fetchTracks = async (country: string, genre: string, mood: string):
       params: {
         q: q,
         type: 'track',
-        market: country.toUpperCase()
+        market: marketCode
       }
     });
 
